@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Freelancer Platform</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      input,
+      button {
+        margin: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const NAMES = [
+        "Alice",
+        "Bob",
+        "Charlie",
+        "Dana",
+        "Eli",
+        "Fay",
+        "Grace",
+        "Hank",
+      ];
+      const OCCUPATIONS = [
+        "Web Developer",
+        "Designer",
+        "Writer",
+        "Photographer",
+        "SEO Specialist",
+        "Video Editor",
+      ];
+      const MIN_RATE = 20;
+      const MAX_RATE = 100;
+      const NUM_FREELANCERS = 5;
+
+      function generateRandomFreelancer() {
+        const name = NAMES[Math.floor(Math.random() * NAMES.length)];
+        const occupation =
+          OCCUPATIONS[Math.floor(Math.random() * OCCUPATIONS.length)];
+        const rate =
+          Math.floor(Math.random() * (MAX_RATE - MIN_RATE + 1)) + MIN_RATE;
+        return { name, occupation, rate };
+      }
+
+      function App() {
+        const [freelancers, setFreelancers] = React.useState(() =>
+          Array.from({ length: NUM_FREELANCERS }, generateRandomFreelancer)
+        );
+
+        const averageRate = React.useMemo(() => {
+          const total = freelancers.reduce((sum, f) => sum + f.rate, 0);
+          return (total / freelancers.length).toFixed(2);
+        }, [freelancers]);
+
+        const addFreelancer = (freelancer) => {
+          setFreelancers((prev) => [...prev, freelancer]);
+        };
+
+        return (
+          <div>
+            <h1>Freelancer Platform</h1>
+            <AverageRateDisplay averageRate={averageRate} />
+            <FreelancerForm onAdd={addFreelancer} />
+            <FreelancerList freelancers={freelancers} />
+          </div>
+        );
+      }
+
+      function AverageRateDisplay({ averageRate }) {
+        return <h2>Average Rate: ${averageRate}/hr</h2>;
+      }
+
+      function FreelancerList({ freelancers }) {
+        return (
+          <ul>
+            {freelancers.map((f, i) => (
+              <Freelancer key={i} {...f} />
+            ))}
+          </ul>
+        );
+      }
+
+      function Freelancer({ name, occupation, rate }) {
+        return (
+          <li>
+            <strong>{name}</strong> – {occupation}, ${rate}/hr
+          </li>
+        );
+      }
+
+      function FreelancerForm({ onAdd }) {
+        const [name, setName] = React.useState("");
+        const [occupation, setOccupation] = React.useState("");
+        const [rate, setRate] = React.useState("");
+
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          if (!name || !occupation || isNaN(rate)) return;
+          onAdd({ name, occupation, rate: Number(rate) });
+          setName("");
+          setOccupation("");
+          setRate("");
+        };
+
+        return (
+          <form onSubmit={handleSubmit}>
+            <h3>Add Freelancer</h3>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name"
+              required
+            />
+            <input
+              value={occupation}
+              onChange={(e) => setOccupation(e.target.value)}
+              placeholder="Occupation"
+              required
+            />
+            <input
+              type="number"
+              value={rate}
+              onChange={(e) => setRate(e.target.value)}
+              placeholder="Rate"
+              required
+              min={MIN_RATE}
+              max={MAX_RATE}
+            />
+            <button type="submit">Add</button>
+          </form>
+        );
+      }
+
+      ReactDOM.render(<App />, document.getElementById("root"));
+    </script>
+  </body>
+</html>
